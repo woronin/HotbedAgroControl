@@ -5,7 +5,7 @@
 Все исходные коды проекта опубликованы по адресу:  
 https://github.com/woronin/HotbedAgroControl
 
-Телеграм канал поддержки проекта:  
+Телеграм канал поддержки проекта: 
 https://t.me/hotbed_agro
 
 ## Команды для загрузки проекта в контроллер ESP32
@@ -15,3 +15,20 @@ cd "Ваша директория проекта где расположен ф�
 pio run
 cd .pio/build/esp32dev/
 esptool --chip esp32 --port /dev/ttyACM0 --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size 4MB 0x1000 bootloader.bin 0x8000 partitions.bin 0x10000 firmware.bin
+
+```bash
+Посмотреть вывод информации в консоли
+stty -F /dev/ttyACM0 raw -echo 115200
+cat /dev/ttyACM0
+
+
+
+Дополнительные команды PlatformIO
+# Очистка проекта
+pio run --target clean
+
+# Загрузка через USB
+pio run --target upload
+
+# Мониторинг последовательного порта
+pio device monitor
