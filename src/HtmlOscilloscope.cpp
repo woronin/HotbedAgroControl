@@ -3,14 +3,13 @@
 #include <WiFi.h>
 #include <WebServer.h>
 using WiFiWebServer = WebServer;
-//extern WebServer server;
 #if defined(AUTO_CONNECT)
 #include <AutoConnectCore.h>
 #endif
 extern AutoConnect portal;
 
 #if defined (IF_AMT1001)
-#include "SWITH/AMT1001.h"
+#include "SWITCH/AMT1001.h"
 extern AMT1001 Amt1001;
 #endif
 
@@ -18,24 +17,6 @@ String getPageTemplate(String title, String content);
 float currentTemp = 0;
 float currentHum = 0;
 #if defined (PAGE_OSCILLOSCOPE)
-/*
-#if defined(AUTO_CONNECT)
-#include <AutoConnectCore.h>
-#endif
-#if defined (IF_EC)
-#include "EC_meter.h"
-extern EC_meter *pEC_meter;
-#endif
-#if defined (IF_PHandTEMP)
-#include "PhAndTemperature.h"
-extern PhAndTemperature *pPhAndTemperature;
-#endif
-
-// Состояние управления
-String controlState = "STOP";
-
-
-*/
 void handleOscilloscope() {
   WiFiWebServer&  webServer = portal.host();
   String content = R"(
@@ -184,13 +165,7 @@ int dataIndex = 0;
 // Вызывается с заданной периодичностью из loop()
 void updateOscSensorData() {
   float newTemp{0};
-   //= dht.readTemperature();
   float newHum{0};
-//   = dht.readHumidity();
-//  if (isnan(newTemp) || isnan(newHum)) {
-//    Serial.println("Failed to read from DHT sensor!");
-//    return;
-//  }
   #if defined (MY_DEBUG)
     newTemp = random(50);
     newHum = random(100);
@@ -198,11 +173,9 @@ void updateOscSensorData() {
   #if defined (IF_AMT1001)
 // Температура
     currentTemp = Amt1001.T_Air;
-//    currentTemp = pPhAndTemperature->PH;
     newTemp = currentTemp;
 // Влажность    
     newHum = Amt1001.H_Air;
-//    newHum = pEC_meter->EC;
   
     currentHum = newHum;
     newHum = currentHum;
@@ -218,15 +191,8 @@ void updateOscSensorData() {
   #endif
 }
 
-// Буферы для хранения данных
-//const int dataPoints = 120;
-//int dataIndex = 0;
-//float temperatureData[dataPoints] = {0};
-//float humidityData[dataPoints] = {0};
-
 void handleOscData() {
   WiFiWebServer&  webServer = portal.host();
-//  StaticJsonDocument<2048> doc;
   StaticJsonDocument<2048*2> doc;
   JsonArray tempArray = doc.createNestedArray("temperature");
   JsonArray humArray = doc.createNestedArray("humidity");

@@ -3,10 +3,9 @@
 #include "SensorLevel.h"
 SensorLevel::SensorLevel(String strN):LFsaAppl(strN) { }
 
-void SensorLevel::run() { LevelView(); }
+void SensorLevel::run() { y1(); }
 
-void SensorLevel::LevelView()
-{
+void SensorLevel::y1() { 
   levelStatus1 = digitalRead(gpioLevel1);
   levelStatus2 = digitalRead(gpioLevel2);
   levelStatus3 = digitalRead(gpioLevel3);

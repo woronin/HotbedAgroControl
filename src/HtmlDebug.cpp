@@ -3,25 +3,16 @@
 #include <WiFi.h>
 #include <WebServer.h>
 using WiFiWebServer = WebServer;
-//extern WebServer server;
 #if defined(AUTO_CONNECT)
 #include <AutoConnectCore.h>
 #endif
 extern AutoConnect portal;
-#if defined (IF_EC)
-#include "SWITH/EC_meter.h"
-extern EC_meter EC_Meter;
-#endif
-#if defined (IF_EC_ONE)
-#include "SWITH/EC_ONE.h"
-extern EC_ONE EC_Meter;
-#endif
 #if defined (IF_EC_2DELAY)
-#include "SWITH/EC_meter2d.h"
+#include "SWITCH/EC_meter2d.h"
 extern EC_meter EC_Meter;
 #endif
 #if defined (IF_PHandTEMP)
-#include "SWITH/PhAndTemperature.h"
+#include "SWITCH/PhAndTemperature.h"
 extern PhAndTemperature PHAndTemperature;
 #endif
 
@@ -109,32 +100,12 @@ void handleDebugValues() {
 void handleInput1() {
   Serial.print("handleInput1");
   WiFiWebServer&  webServer = portal.host();
-  #if defined (IF_EC)
-  if (webServer.method() == HTTP_POST) {
-    EC_Meter.nCyclesEC = webServer.arg("cycles").toInt();
-  }
-  webServer.sendHeader("Location", "/debug");
-  webServer.send(303);
-  Serial.println("in1:Введенное число-1: " + String(EC_Meter.nCyclesEC));
-  EC_Meter.nState = 0;
-  #endif
-  #if defined (IF_EC_ONE)
-  if (webServer.method() == HTTP_POST) {
-    EC_Meter.nCyclesEC = webServer.arg("cycles").toInt();
-  }
-  webServer.sendHeader("Location", "/debug");
-  webServer.send(303);
-  Serial.println("Введенное число-1: " + String(EC_Meter.nCyclesEC));
-  EC_Meter.nState = 0;
-  #endif
   #if defined (IF_EC_2DELAY)
   if (webServer.method() == HTTP_POST) {
-//    EC_Meter.nCyclesEC = webServer.arg("cycles").toInt();
     EC_Meter.fBasys = webServer.arg("cycles").toFloat();
   }
   webServer.sendHeader("Location", "/debug");
   webServer.send(303);
-//  Serial.println("Введенное число-1: " + String(EC_Meter.nCyclesEC));
   Serial.println("Введенное число-1: " + String(EC_Meter.fBasys));
   EC_Meter.nState = 0;
   #endif
@@ -143,32 +114,12 @@ void handleInput1() {
 void handleInput2() {
   Serial.print("handleInput2");
   WiFiWebServer&  webServer = portal.host();
-  #if defined (IF_EC)
-  if (webServer.method() == HTTP_POST) {
-    EC_Meter.nDelayEC = webServer.arg("delay").toInt();
-  }
-  webServer.sendHeader("Location", "/debug");
-  webServer.send(303);
-  Serial.println("In2:Введенное число-2: " + String(EC_Meter.nDelayEC));
-  EC_Meter.nState = 0;
-  #endif
-  #if defined (IF_EC_ONE)
-  if (webServer.method() == HTTP_POST) {
-    EC_Meter.nDelayEC = webServer.arg("delay").toInt();
-  }
-  webServer.sendHeader("Location", "/debug");
-  webServer.send(303);
-  Serial.println("Введенное число-2: " + String(EC_Meter.nDelayEC));
-  EC_Meter.nState = 0;
-  #endif
   #if defined (IF_EC_2DELAY)
   if (webServer.method() == HTTP_POST) {
-//    EC_Meter.nDelayEC = webServer.arg("delay").toInt();
     EC_Meter.fDegree = webServer.arg("delay").toFloat();
   }
   webServer.sendHeader("Location", "/debug");
   webServer.send(303);
-//  Serial.println("Введенное число-2: " + String(EC_Meter.nDelayEC));
   Serial.println("Введенное число-2: " + String(EC_Meter.fDegree));
   EC_Meter.nState = 0;
   #endif

@@ -8,7 +8,8 @@ using WiFiWebServer = WebServer;
 #include <time.h>
 #include "SmartDevice.hpp"
 #include "SD_OpenTherm.hpp"
-
+// константа для примера создания закладки (отображение температуры)
+//#define IF_PAGE_TEMPERATURE
 /*
   Include AutoConnectFS.h allows the sketch to retrieve the current file
   system that AutoConnect has selected. It derives a constant
@@ -32,7 +33,7 @@ using WiFiWebServer = WebServer;
 //AutoConnectWs ws;
 
 #if defined(IF_AMT1001)
-#include "SWITH/AMT1001.h"
+#include "SWITCH/AMT1001.h"
 extern AMT1001 Amt1001;
 #endif
 
@@ -121,9 +122,11 @@ AutoConnect portal;
 AutoConnectAux SetParPage(SET_PAR_URI, "SetPar", false, {}, false);
 
 /************************************/
-// Пользовательская страница
+#if defined(IF_PAGE_TEMPERATURE)
+// Пользовательская  - отображение температуры
 AutoConnectText temperatureText("temp", "", "Current Temperature: -- °C");
 AutoConnectAux temperaturePage(CONTROL_TEMP, "Temperature", true, {temperatureText});
+#endif
 
 //int test_fs(void);
 
@@ -131,14 +134,10 @@ void setup_web_common(void);
 void check_fs(void);
 int setup_web_common_onconnect(void);
 void loop_web(void);
-void onRoot(void);
-void loadParam(String fileName);
 void onConnect(IPAddress& ipaddr);
 #if MQTT_USE
-  extern void mqtt_setup(void);
   extern void mqtt_loop(void);
   extern void mqtt_start(void);
-  extern int MQTT_pub_usePID(void);
 #endif
 String onInfo(AutoConnectAux& aux, PageArgument& args);
 String on_Setup(AutoConnectAux& aux, PageArgument& args);
@@ -151,18 +150,8 @@ String utc_time_jc;
 unsigned int /* AutoConnect:: */ _toWiFiQuality(int32_t rssi);
 
 
-#if defined(IF_EC)
-#include "SWITH/EC_meter.h"
-extern EC_meter EC_Meter;
-float currentTemperature = 0.0;
-#endif
-#if defined(IF_EC_ONE)
-#include "SWITH/EC_meter.h"
-extern EC_meter EC_Meter;
-float currentTemperature = 0.0;
-#endif
 #if defined(IF_EC_2DELAY)
-#include "SWITH/EC_meter2d.h"
+#include "SWITCH/EC_meter2d.h"
 extern EC_meter EC_Meter;
 float currentTemperature = 0.0;
 #endif
@@ -226,22 +215,6 @@ void setup_web_common(void)
     // Обработка URL /data
   void handleData();
   webServer.on("/data", handleData);                     // обновляем данные на странице контроля
-#if defined (IF_EC)
-  void handleGet();
-  webServer.on("/get", handleGet);
-  void handleInput1(); void handleInput2(); void handleCalibration();
-  webServer.on("/input1", handleInput1);
-  webServer.on("/input2", handleInput2);
-  webServer.on("/calibration", handleCalibration);
-#endif
-#if defined (IF_EC_ONE)
-  void handleGet();
-  webServer.on("/get", handleGet);
-  void handleInput1(); void handleInput2(); void handleCalibration();
-  webServer.on("/input1", handleInput1);
-  webServer.on("/input2", handleInput2);
-  webServer.on("/calibration", handleCalibration);
-#endif
 #if defined (IF_EC_2DELAY)
   void handleGet();
   webServer.on("/get", handleGet);
@@ -286,22 +259,23 @@ void setup_web_common(void)
     else{
         esp_wifi_get_mac(WIFI_IF_STA, SmOT.Mac);
     }  
-
+#if defined(IF_PAGE_TEMPERATURE)
+// Пример создание закладки для отображения температуры
   temperaturePage.on([](AutoConnectAux& aux, PageArgument& args) {
     String tempStr = "Current Temperature: " + String(currentTemperature) + " °C";
     temperatureText.value = tempStr;
     aux["temp"].as<AutoConnectText>().value = tempStr;
     return String();
   }, AC_EXIT_AHEAD);
-  portal.join({temperaturePage});
+// подключчение закладки  
+  portal.join({temperaturePage}); // см. также строки 125,126
+#endif  
   String ssd = WiFi.SSID();
   if (ssd=="DIR-620") {
-    Serial.println("DIR-6200 connect");
+    Serial.println("DIR-620 connect");
 extern bool bIfLaser;
     bIfLaser = false;
   }
-
-
 }
 
 int setup_web_common_onconnect(void)
@@ -504,15 +478,6 @@ String onSetPar(AutoConnectAux& aux, PageArgument& args)
     aux.redirect(INFO_URI);
 
   return String();
-}
-
-// Redirects from root to the info page.
-void onRoot() {
-  WiFiWebServer&  webServer = portal.host();
-  webServer.sendHeader("Location", String("http://") + webServer.client().localIP().toString() + String(INFO_URI));
-  webServer.send(302, "text/plain", "");
-  webServer.client().flush();
-  webServer.client().stop();
 }
 
 float mRSSi = 0.;

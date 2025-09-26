@@ -25,7 +25,6 @@ public:
 #endif //MQTT_USE
   int start_sts; //1 - start state, need ask server for last I and U0(?),  &0x02 - OT start log, 0 - not start
 
-
   SD_Termo(void)
   {	  
 

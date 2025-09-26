@@ -4,17 +4,15 @@
 
 #define CONFIG_VERSIONBASE 0x1003
 
-//ST_VERS 0   SmartTherm32
-//ST_VERS 1   SmartTherm = SmartTherm32 + Relay
-//ST_VERS 2   SmartTherm 2 = SmartTherm32 + Relay + 2 OpenTherm (master+slave)
+//ST_VERS 0   
+//ST_VERS 1   
+//ST_VERS 2   
 #define ST_VERS 0
 
 #define SERIAL_DEBUG 0
 #define OT_DEBUG 0
 #define SERVER_DEBUG 0
 #define T_DEBUG 0
-
-//#define OT_DEBUGLOG 1 //default
 
 #if ST_VERS == 0
   #if defined(ARDUINO_ARCH_ESP8266)
@@ -37,14 +35,6 @@
   error
 #endif
 
-
-/* Min & max CH temp */
-#define MIN_CH_TEMP  25
-#define MAX_CH_TEMP  80
-
-/* Room setpoint Min & max */
-#define MIN_ROOM_TEMP  5
-#define MAX_ROOM_TEMP  35
 
 #define IDENTIFY_TYPE     DS_OPENTHERM
 #define IDENTIFY_SUBTYPE  ST_VERS
@@ -81,7 +71,7 @@
 #if defined(ARDUINO_ARCH_ESP8266)
   #define AUTOCONNECT_MENU_TITLE  "SmartTherm ESP8266"
 #elif defined(ARDUINO_ARCH_ESP32)
-  #define AUTOCONNECT_MENU_TITLE  "SmartTherm"
+  #define AUTOCONNECT_MENU_TITLE  "HotbedAgroControl"
   #if ST_VERS == 0
   #elif ST_VERS == 1
   #elif ST_VERS == 2

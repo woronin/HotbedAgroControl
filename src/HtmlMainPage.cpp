@@ -7,43 +7,32 @@ using WiFiWebServer = WebServer;
 #include <AutoConnectCore.h>
 #endif
 #if defined (IF_LUX)
-#include "SWITH/LUX_meter.h"
+#include "SWITCH/LUX_meter.h"
 extern LUX_meter Lux_meter;
 #endif
-#if defined (IF_EC)
-#include "SWITH/EC_meter.h"
-extern EC_meter EC_Meter;
-#endif
-#if defined (IF_EC_ONE)
-#include "SWITH/EC_ONE.h"
-extern EC_ONE EC_Meter;
-#endif
 #if defined (IF_EC_2DELAY)
-#include "SWITH/EC_meter2d.h"
+#include "SWITCH/EC_meter2d.h"
 extern EC_meter EC_Meter;
 #endif
 #if defined (IF_PHandTEMP)
-#include "SWITH/PhAndTemperature.h"
+#include "SWITCH/PhAndTemperature.h"
 extern PhAndTemperature PHAndTemperature;
 #endif
 #if defined (IF_AMT1001)
-#include "SWITH/AMT1001.h"
+#include "SWITCH/AMT1001.h"
 extern AMT1001 Amt1001;
 #endif
 #if defined (IF_DS18D20)
-#include "SWITH/SensorDS18D20.h"
+#include "SWITCH/SensorDS18D20.h"
 extern SensorDS18D20 DS18D20;
 #endif
 #if defined (IF_DS18D20)
-#include "SWITH/SensorLevel.h"
+#include "SWITCH/SensorLevel.h"
 extern SensorLevel sensorlevel;
 
 extern SensorDS18D20 DS18D20;
 #endif
 
-//extern SensorDS18D20 sensords18d20;
-
-//extern WebServer server;
 extern AutoConnect portal;
 
 // Состояние управления
@@ -139,18 +128,14 @@ String getPageTemplate(String title, String content) {
 }
 // 1. Запускается при сбросе сайта. 2. Устанавливает начальну страницу сайта 
 void handleRootOsc() {
-//  Serial.println("handleRootOsc()");
-//  server.sendHeader("Location", "/oscilloscope");
   WiFiWebServer&  webServer = portal.host();
   webServer.sendHeader("Location", "/settings");
-//  server.sendHeader("Location", "/control");
   webServer.send(302, "text/plain", "Redirecting to Oscilloscope");
 }
-//*
+
 void handleControl() {
   WiFiWebServer&  webServer = portal.host();
   String ptr;
-//*  
   ptr = R"(
   <style>
     html { font-family: Helvetica; display: inline-block; 
@@ -201,12 +186,6 @@ void handleControl() {
     #if defined (IF_PHandTEMP)
       ptr +=R"(<h2>PH: <span id="sensorPH">)" + String(PHAndTemperature.PH) + R"(</span>ph</h2>)";
     #endif
-    #if defined (IF_EC)
-      ptr +=R"(<h2>EC: <span id="sensorEC">)" + String(EC_Meter.EC) + R"(</span></h2>)";
-    #endif
-    #if defined (IF_EC_ONE)
-      ptr +=R"(<h2>EC: <span id="sensorEC">)" + String(EC_Meter.EC) + R"(</span></h2>)";
-    #endif
     #if defined (IF_EC_2DELAY)
       ptr +=R"(<h2>EC: <span id="sensorEC">)" + String(EC_Meter.EC) + R"(</span></h2>)";
     #endif
@@ -233,9 +212,6 @@ void handleControl() {
       if (Lux_meter.FStatus1&&Lux_meter.FStatus2) { page += String(F("<a class=\"button\" href=\"/io?v=16\">Ясно</a>")); }
       else if (Lux_meter.FStatus1&&!Lux_meter.FStatus2) { page += String(F("<a class=\"button\" href=\"/io?v=17\">Пасм</a>")); }
       else  { page += String(F("<a class=\"button\" href=\"/io?v=18\">Пасм/Ясно=ERR</a>")); }
-//      else { page += String(F("<a class=\"button\" href=\"/io?v=17\">Off/On(Ясно/Пасмурно)=OFF</a>")); }
-//      if (Lux_meter.FStatus2) { page += String(F("<a class=\"button\" href=\"/io?v=18\">F2=ON</a>")); }
-//      else { page += String(F("<a class=\"button\" href=\"/io?v=19\">F2=OFF</a>")); }
       #endif
       page += String(F("</p>"));
       ptr +=page;
@@ -300,14 +276,6 @@ void handleSettings() {
   if (bIfLuxMeter) { content += String(F("<a class=\"button\" href=\"/io?v=102\">LUX_meter=ON</a>")); }
   else { content += String(F("<a class=\"button\" href=\"/io?v=103\">LUX_meter=OFF</a>")); }
   #endif
-  #if defined (IF_EC)
-  if (bIfEcMeter) { content += String(F("<a class=\"button\" href=\"/io?v=104\">EC_meter=ON</a>")); }
-  else { content += String(F("<a class=\"button\" href=\"/io?v=105\">EC_meter=OFF</a>")); }
-  #endif
-  #if defined (IF_EC_ONE)
-  if (bIfEcMeter) { content += String(F("<a class=\"button\" href=\"/io?v=104\">EC_ONE=ON</a>")); }
-  else { content += String(F("<a class=\"button\" href=\"/io?v=105\">EC_meter=OFF</a>")); }
-  #endif
   #if defined (IF_EC_2DELAY)
   if (bIfEcMeter) { content += String(F("<a class=\"button\" href=\"/io?v=104\">EC_meter=ON</a>")); }
   else { content += String(F("<a class=\"button\" href=\"/io?v=105\">EC_meter=OFF</a>")); }
@@ -315,39 +283,11 @@ void handleSettings() {
   if (bIfAnySensors) { content += String(F("<a class=\"button\" href=\"/io?v=106\">ANY_sensor=ON</a>")); }
   else { content += String(F("<a class=\"button\" href=\"/io?v=107\">ANY_sensor=OFF</a>")); }
   content += String(F("</p>"));
-/*  
-  #if defined (IF_EC)
-  // Форма для ввода первого числа
-  content += "<form action='/input1' method='POST'>";
-  content += "Cycles EC: <input type='text' name='cycles' value='" + String(EC_Meter.nCyclesEC) + "'>";
-  content += "<input type='submit' value='OK1'>";
-  content += "</form>";
-  // Форма для ввода второго числа
-  content += "<form action='/input2' method='POST'>";
-  content += "Delay  EC: <input type='text' name='delay' value='" + String(EC_Meter.nDelayEC) + "'>";
-  content += "<input type='submit' value='OK2'>";
-  content += "</form>";
-  #endif
-  #if defined (IF_PHandTEMP)
-  // Форма для ввода calibration
-  content += "<form action='/calibration' method='POST'>";
-  content += "calibration(Ph): <input type='text' name='calibration' value='" + String(PHAndTemperature.calibration) + "'>";
-  content += "<input type='submit' value='OK3'>";
-  content += "</form>";
-  #endif
-*/
   webServer.send(200, "text/html", getPageTemplate("Settings", content));
 }
 // Функция для обработки URL /data
 void handleData() {
   WiFiWebServer&  webServer = portal.host();
-/*  
-  // Генерация случайного числа и имитация значения с датчика
-  randomNumber = random(100);
-//  sensorValue = T_air = randomNumber;
-  sensorValue = analogRead(34); // Пример чтения с аналогового датчика на пине 34
-  sensorValue = inputNumber;
-*/
   // Формируем JSON-ответ
   #if defined (MY_DEBUG)
   pPhAndTemperature->PH = pAmt1001->H_air*2;
@@ -363,12 +303,6 @@ void handleData() {
   #if defined (IF_PHandTEMP)
   + String(",\"sensorPH\":") + String(PHAndTemperature.PH) 
   #endif
-  #if defined (IF_EC)
-  + String(",\"sensorEC\":") + String(EC_Meter.EC) 
-  #endif
-  #if defined (IF_EC_ONE)
-  + String(",\"sensorEC\":") + String(EC_Meter.EC) 
-  #endif
   #if defined (IF_EC_2DELAY)
   + String(",\"sensorEC\":") + String(EC_Meter.EC) 
   #endif
@@ -377,7 +311,6 @@ void handleData() {
   #endif
   #if defined (IF_DS18D20)
   +
-//  ",\"sensorDS18B20\":" + String(sensords18d20.DS18B20) + "}";
   
   ",\"sensorDS18B20\":" + String(DS18D20.DS18B20) 
   #endif

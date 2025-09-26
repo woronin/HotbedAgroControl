@@ -1,12 +1,5 @@
 #include <Arduino.h>
 #include <PubSubClient.h>
-//extern PubSubClient client;
-
-// Номера выводов для цифровых входов
-// Номера выводов для подключения реле
-//const int gpioRelay1  = 14;
-//const int gpioRelay2  = 15;
-//const int gpioRelay3  = 16;
 int gpioRelay1  = 25;
 int gpioRelay2  = 26;
 int gpioRelay3  = 27;
@@ -89,17 +82,12 @@ void RelaymqttOnIncomingMsg(char* topic, byte* payload, unsigned int length)
 }
 
 // Управление реле
-extern bool bIf_MQTT;
 void relayControl()
 {
   // Новое состояние реле 1 отличается от текущего, требуется переключение
   if (relayStatus1 != led1State) {
     relayStatus1 = led1State;
     digitalWrite(gpioRelay1, relayStatus1);
-    if (bIf_MQTT) {
-      // Отправляем подтверждение, что команда получена и обработана
-//      client.publish(mqttTopicStatusRelay1, (relayStatus1 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2), mqttRelayStatusRetained);
-    }
     // Можно вывести сообщение в лог
     Serial.print("Relay 1 has changed its state: ");
     Serial.println(relayStatus1 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2);
@@ -108,10 +96,6 @@ void relayControl()
   if (relayStatus2 != led2State) {
     relayStatus2 = led2State;
     digitalWrite(gpioRelay2, relayStatus2);
-    if (bIf_MQTT) {
-        // Отправляем подтверждение, что команда получена и обработана
-//      client.publish(mqttTopicStatusRelay2, (relayStatus2 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2), mqttRelayStatusRetained);
-    }
     // Можно вывести сообщение в лог
     Serial.print("Relay 2 has changed its state: ");
     Serial.println(relayStatus2 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2);
@@ -120,12 +104,5 @@ void relayControl()
   if (relayStatus3 != led3State) {
     relayStatus3 = led3State;
     digitalWrite(gpioRelay3, relayStatus3);
-    if (bIf_MQTT) {
-        // Отправляем подтверждение, что команда получена и обработана
-//      client.publish(mqttTopicStatusRelay3, (relayStatus3 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2), mqttRelayStatusRetained);
-    }
-    // Можно вывести сообщение в лог
-//    Serial.print("Relay 3 has changed its state: ");
-//    Serial.println(relayStatus3 == 1 ? mqttRelayStatusOn2 : mqttRelayStatusOff2);
   };
 }

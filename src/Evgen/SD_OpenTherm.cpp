@@ -1,24 +1,15 @@
 /* SD_OpenTherm.cpp */
 #include <time.h>
 #include <Arduino.h>
-#if defined(ARDUINO_ARCH_ESP8266)
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-typedef ESP8266WebServer WEBServer;
-#elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
 #include <WebServer.h>
 #include "esp32/rom/rtc.h"
 typedef WebServer WEBServer;
-#endif
 #include <AutoConnect.h>
 #include <AutoConnectFS.h>
 extern AutoConnectFS::FS& FlashFS;
 
 #include "SD_OpenTherm.hpp"
-#include "Smart_commands.h"
-
-
 
 extern U8 *esp_get_buf (U16 size);
 extern U8 *server_get_buf (U16 size);
@@ -26,7 +17,6 @@ extern U8 *server_get_buf (U16 size);
 int indcmd = 0;
 
 /*******************************/
-//const int FS_BUF = sizeof(SD_Termo::enable_CentralHeating); 
 const int FS_BUF = 0; 
 
 #if RELAY_USE    
@@ -40,7 +30,6 @@ const int FS_BUFMQTT =
 #endif
 
 /**^^^******************************/
-
 
 const char *path="/smot_par";
 const char *pathmqtt="/smotmqtt";
@@ -145,7 +134,6 @@ int SD_Termo::Write_data_fs(char *_path, uint8_t *dataBuff, int len, int mode)
     Serial.printf((PGM_P)F("Writing file: %s %d bytes\n"), _path, len);
 #endif // SERIAL_DEBUG      
 
-//    File file = FlashFS.open(_path, FILE_WRITE);  //FILE_WRITE
     File file = FlashFS.open(_path, "w");  //FILE_WRITE
     if(!file)
     {  
@@ -175,7 +163,6 @@ int SD_Termo::Write_data_fs(char *_path, uint8_t *dataBuff, int len, int mode)
     nw += file.write((unsigned char *) &crs, sizeof(unsigned short int));
     if(nw != (len + 4*sizeof(unsigned short int) ) )
         rc = 2;
-//    Serial.printf("write nw =%d len=%d rc=%d\n", nw, len, rc);
     file.close();
     return rc;
 }
@@ -185,7 +172,6 @@ int SD_Termo::Read_mqtt_fs(void)
 {   int rc, n, nw;
     uint8_t Buff[FS_BUFMQTT];
     uint8_t len;
-
 
     rc = Read_data_fs((char *)pathmqtt, Buff, FS_BUFMQTT, nw, 1);
 #if SERIAL_DEBUG      
@@ -273,16 +259,13 @@ void SD_Termo::loop(void)
 
     if(need_write_f)
     {   
-//        Serial.println("lws - need_write_f");
         if(need_write_f & 0x01)
         {   
-//            Serial.println("lws - Write_ot_fs - 01");
             Write_ot_fs();
             need_write_f &= ~0x01;
         }
         if(need_write_f & 0x02)
         {   
-//            Serial.println("lws - Write_ot_fs - 02");
             Write_mqtt_fs();
             need_write_f &= ~0x02;
         }
@@ -294,7 +277,6 @@ void SD_Termo::loop(void)
 
 int SD_Termo::Write_ot_fs(void)
 {   
-//    Serial.println("lws - Write_on_fs");
     int rc, n;
     uint8_t Buff[FS_BUF];
     

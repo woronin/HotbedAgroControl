@@ -6,7 +6,6 @@
 class SensorLevel:public LFsaAppl 
 {
 public:
-    void LevelView();
     SensorLevel(String strN);
     ~SensorLevel() {};
     void run();
@@ -16,7 +15,6 @@ protected:
     bool levelStatus1{false};
     bool levelStatus2{false};
     bool levelStatus3{false};
-    // Номера выводов для цифровых входов
     // Номера выводов для подключения реле
     const int gpioLevel1{18};
     const int gpioLevel2{19};

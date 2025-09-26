@@ -5,7 +5,6 @@
 #include <WiFi.h>
 #include <WebServer.h>
 using WiFiWebServer = WebServer;
-#define FORMAT_ON_FAIL  true
 
 #include <time.h>
 #include "Config.h"
@@ -18,27 +17,25 @@ using WiFiWebServer = WebServer;
 #include <ArduinoHA.h>
 #include <PubSubClient.h>
 
-
-
 void mqtt_start(void);
 void mqtt_loop(void);
 void mqtt_setup(void);
 
 #if defined (IF_PHandTEMP)
-#include "SWITH/PhAndTemperature.h"
+#include "SWITCH/PhAndTemperature.h"
 extern PhAndTemperature PHAndTemperature;
 #endif
 #if defined(IF_AMT1001)
-#include "SWITH/AMT1001.h"
+#include "SWITCH/AMT1001.h"
 extern AMT1001 Amt1001;
 #endif
 #if defined(IF_LUX)
-#include "SWITH/LUX_meter.h"
+#include "SWITCH/LUX_meter.h"
 extern LUX_meter Lux_meter;
 extern bool bIfLuxMeter;
 #endif
 #if defined(IF_SENSORLEVEL)
-#include "SWITH/SensorLevel.h"
+#include "SWITCH/SensorLevel.h"
 extern SensorLevel sensorlevel;
 #endif
 
@@ -49,8 +46,6 @@ PubSubClient client(espClient);
 extern  SD_Termo SmOT;
 
 /*******************************************************************************/
-//HADevice *pHAdevice;
-//HAMqtt *pMqtt;
 const char * temperature_str = "temperature";
 HADevice device;
 HAMqtt mqtt(espClient, device,27);
@@ -71,22 +66,8 @@ const char * illuminance_str = "illuminance";
 #if defined (IF_PHandTEMP)
 HASensor sensorPH(NULL,HANumber::PrecisionP3);
 #endif
-#if defined (IF_EC)
-#include "SWITH/EC_meter.h"
-extern EC_meter EC_Meter;
-HASensor sensorEC(NULL,HANumber::PrecisionP3);
-HASwitch IFEC("IFEC");
-HASwitch IFPH("IFPH");
-#endif
-#if defined (IF_EC_ONE)
-#include "SWITH/EC_ONE.h"
-extern EC_ONE EC_Meter;
-HASensor sensorEC(NULL,HANumber::PrecisionP3);
-HASwitch IFEC("IFEC");
-HASwitch IFPH("IFPH");
-#endif
 #if defined (IF_EC_2DELAY)
-#include "SWITH/EC_meter2d.h"
+#include "SWITCH/EC_meter2d.h"
 extern EC_meter EC_Meter;
 HASensor sensorEC(NULL,HANumber::PrecisionP3);
 HASwitch IFEC("IFEC");
@@ -94,12 +75,11 @@ HASwitch IFPH("IFPH");
 #endif
 
 #if defined (IF_DS18D20)
-#include "SWITH/SensorDS18D20.h"
+#include "SWITCH/SensorDS18D20.h"
 extern SensorDS18D20 DS18D20;
 HASensor sensorDS1820(NULL,HANumber::PrecisionP3);
 #endif
 
-//#define LED_PIN         0
 #if defined(IF_RELAY)
 extern bool led1State, led2State, led3State, bIfRelay;
 HASwitch relay1("relay1");
@@ -149,14 +129,6 @@ void onSwitchCommandClearCloudy(bool state, HASwitch* sender)
 extern bool bIfEcMeter;
 void onSwitchCommandIFEC(bool state, HASwitch* sender)
 {
-#if defined (IF_EC)
-    bIfEcMeter = state; 
-    sender->setState(state); // report state back to the Home Assistant
-#endif
-#if defined (IF_EC_ONE)
-    bIfEcMeter = state; 
-    sender->setState(state); // report state back to the Home Assistant
-#endif
 #if defined (IF_EC_2DELAY)
     bIfEcMeter = state; 
     sender->setState(state); // report state back to the Home Assistant
@@ -171,9 +143,6 @@ void onSwitchCommandIFPH(bool state, HASwitch* sender)
     Serial.printf("bIfPhMeter - %d\n", bIfPhMeter);
 #endif
 }
-// By default HAHVAC supports only reporting of the temperature.
-// You can enable feature you need using the second argument of the constructor.
-// Please check the documentation of the HAHVAC class.
 unsigned long lastReadAt = millis();
 unsigned long lastAvailabilityToggleAt = millis();
 bool lastInputState = false;
@@ -193,14 +162,12 @@ void mqtt_setup(void)
 
   if (WiFi.status() != WL_CONNECTED)  
         return;
-//   Serial.printf("SmOT.useMQTT = %d\n", SmOT.useMQTT);
    if(SmOT.useMQTT != 0x03) 
       return;
 
   if( mqtt.getDevicesTypesNb_toreg() > mqtt.getDevicesTypesNb())
   {
       Serial.printf("Error! Nb = %d, need be %d\n", mqtt.getDevicesTypesNb(),  mqtt.getDevicesTypesNb_toreg() );
-//look at 45 HAMqtt mqtt(espClient, device,27);      
     return;
   }
 
@@ -241,16 +208,6 @@ void mqtt_setup(void)
     sensorPH.setNameUniqueIdStr(SmOT.MQTT_topic,"PH", "agr_ph");
     sensorPH.setDeviceClass(temperature_str); 
 #endif    
-#if defined (IF_EC)
-    sensorEC.setAvailability(true);
-    sensorEC.setNameUniqueIdStr(SmOT.MQTT_topic,"EC", "agr_ec");
-    sensorEC.setDeviceClass(temperature_str); 
-#endif    
-#if defined (IF_EC_ONE)
-    sensorEC.setAvailability(true);
-    sensorEC.setNameUniqueIdStr(SmOT.MQTT_topic,"EC", "agr_ec");
-    sensorEC.setDeviceClass(temperature_str); 
-#endif    
 #if defined (IF_EC_2DELAY)
     sensorEC.setAvailability(true);
     sensorEC.setNameUniqueIdStr(SmOT.MQTT_topic,"EC", "agr_ec");
@@ -270,7 +227,6 @@ void mqtt_setup(void)
     rc= mqtt.begin(SmOT.MQTT_server, SmOT.MQTT_port, SmOT.MQTT_user, SmOT.MQTT_pwd);
     if(rc == true)
     {  
-//        Serial.println("lws(2)---");
         Serial.printf("mqtt.begin ok %s:%d %s %s\n", SmOT.MQTT_server, SmOT.MQTT_port, SmOT.MQTT_user, SmOT.MQTT_pwd);
         SmOT.stsMQTT = 2;
     } else {
@@ -315,17 +271,13 @@ void mqtt_setup(void)
 void OnMQTTconnected(void)
 { 
   statemqtt = 1;
-//   Serial.printf("OnMQTTconnected %d\n", statemqtt );
-
 }
 void OnMQTTdisconnected(void)
 { statemqtt = 0;
-//   Serial.printf("OnMQTT disconnected %d\n", statemqtt );
 }
 
 void mqtt_start(void)
 {
-//   Serial.printf("(lws-1)mqtt_start SmOT.stsMQTT %d\n", SmOT.stsMQTT);
   if(SmOT.stsMQTT == 0)
   {   mqtt_setup();
   } else {
@@ -333,10 +285,8 @@ void mqtt_start(void)
     rc= mqtt.begin(SmOT.MQTT_server,SmOT.MQTT_user, SmOT.MQTT_pwd);
     if(rc == true)
     { 
-//        Serial.println("lws(3)---");
         Serial.printf("(1) mqtt.begin ok %s %s %s\n", SmOT.MQTT_server,SmOT.MQTT_user, SmOT.MQTT_pwd);
         SmOT.stsMQTT = 2;
-//        Serial.printf("(lws-2)mqtt_start SmOT.stsMQTT %d\n", SmOT.stsMQTT);
     } else {
         Serial.printf("(1)mqtt.begin false\n");
     }
@@ -392,10 +342,8 @@ if(SmOT.stsMQTT == 0) {   mqtt_setup();  return; }
 #if defined(IF_LUX)
   float lux;
   lux = Lux_meter.LUX;
-//  lux=9.999;
   sprintf(str,"%.1f", lux);
   sensorLUX.setValue(str);
-//  Serial.println(lux);
 #endif    
 #endif    
 #endif      
@@ -404,18 +352,6 @@ if(SmOT.stsMQTT == 0) {   mqtt_setup();  return; }
       ph = PHAndTemperature.PH;
       sprintf(str,"%.1f", ph);
       sensorPH.setValue(str);
-#endif    
-#if defined (IF_EC)
-    float ec;
-      ec = EC_Meter.EC;
-      sprintf(str,"%.1f", ec);
-      sensorEC.setValue(str);
-#endif    
-#if defined (IF_EC_ONE)
-    float ec;
-      ec = EC_Meter.EC;
-      sprintf(str,"%.1f", ec);
-      sensorEC.setValue(str);
 #endif    
 #if defined (IF_EC_2DELAY)
     float ec;
@@ -435,8 +371,6 @@ if(SmOT.stsMQTT == 0) {   mqtt_setup();  return; }
     }
     static bool bIfInitSwith=false;
     if (!bIfInitSwith) {
-//        Serial.printf("lws(mqtt_setup) - bIfLuxMeter %d\n", bIfLuxMeter);
-//        Serial.printf("lws(mqtt_setup) - bIfPhMeter %d\n", bIfPhMeter);
         IFEC.setState(bIfLuxMeter, true);
         IFPH.setState(bIfPhMeter, true);
         ClearCloudy.setState(true, true);
