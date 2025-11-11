@@ -1,0 +1,15 @@
+{
+  "name": "VCPaCore",
+  "version": "1.0.0",
+  "keywords": "esp32, arduino",
+  "description": "Finit State library for embedded C++.",
+  "authors": {
+    "name": "Vyacheslav Lubchenko"
+  },
+  "frameworks": "arduino",
+  "platforms": [
+      "atmelavr",
+      "espressif8266",
+      "espressif32"
+  ]
+}
